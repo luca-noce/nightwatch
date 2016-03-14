@@ -27,25 +27,35 @@ module.exports = {
 
   'test_env' : {
     myGlobal: 'test_global',
-    beforeEach : function() {
-
+    beforeEach : function() {      
     }
   },
 
   before : function(cb) {
+    console.log("global before");
     cb();
   },
 
   beforeEach : function(browser, cb) {
+    console.log("global beforeEach");
     cb();
   },
 
   after : function(cb) {
+    console.log("global after");
     cb();
   },
 
   afterEach : function(browser, cb) {
-    cb();
+    console.log("global afterEach");
+
+    //here I want to end the session and do some cleanup
+    browser.end(function () {
+         setTimeout(function() {
+           console.log("**** global afterEach is completed ****");
+           cb();
+         },3000);
+    });
   },
 
   reporter : function(results, cb) {

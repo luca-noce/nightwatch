@@ -1,35 +1,84 @@
-# Nightwatch
+# Nightwatch problem with Global afterEach
 
-UI automated testing framework powered by [Node.js](http://nodejs.org/). It uses the [Selenium WebDriver API](https://github.com/SeleniumHQ/selenium/wiki/JsonWireProtocol).
+I have experienced weird behaviour when I try to use the After or Global AfterEach in my tests when I trigger more than one test, which leads to a second test to run before the previous one has completed. Here I want reproduce the problem with a minimal change on the the original code.
 
-[![Build Status](https://travis-ci.org/nightwatchjs/nightwatch.svg?branch=master)](https://travis-ci.org/nightwatchjs/nightwatch) [![NPM version](https://badge.fury.io/js/nightwatch.png)](http://badge.fury.io/js/nightwatch) [![Coverage Status](https://coveralls.io/repos/nightwatchjs/nightwatch/badge.svg?branch=master&service=github)](https://coveralls.io/github/nightwatchjs/nightwatch?branch=master)
+I have two tests, that are a copy of the \examples\tests\google\googleDemoTest.js, but I've moved the browser.end session in the Global AfterEach.
+The reason why I'm trying to run this code is because I'd like to manage the end session in the Global afterEach, so I don't need to call browser.end in every testsuite and also because I want to add clean up logic in the afterEach.
 
-***
+The expected behaviour of the two tests is:
 
-#### [Homepage](http://nightwatchjs.org) | [Developer Guide](http://nightwatchjs.org/guide) | [API Reference](http://nightwatchjs.org/api) | [Changelog](https://github.com/nightwatchjs/nightwatch/releases)
-
-### Selenium WebDriver standalone server
-Nightwatch works with the Selenium standalone server so the first thing you need to do is download the selenium server jar file `selenium-server-standalone-2.x.x.jar` from the Selenium releases page:
-**https://selenium-release.storage.googleapis.com/index.html**
-
-### Install Nightwatch
-
-Install Node.js and then:
 ```sh
-$ git clone git@github.com:nightwatchjs/nightwatch.git
-$ cd nightwatch
-$ npm install
+[Tests\google\google Demo Test] Test Suite
+==========================================
+global beforeEach
+test #1 before
+Running:  demo test google #1
+ ? Element <body> was present after 27 milliseconds.
+OK. 1 assertions passed. (1.895s)
+
+Running:  part two #1
+ ? Testing if element <#main> contains text: "Night Watch".
+OK. 1 assertions passed. (2.269s)
+test #1 after
+global afterEach
+**** global afterEach is completed ****
+
+[Tests\google\google Demo Test2] Test Suite
+===========================================
+global beforeEach
+test #2 before
+Running:  demo test google #1
+ ? Element <body> was present after 26 milliseconds.
+OK. 1 assertions passed. (1.877s)
+Running:  part two #2
+ ? Testing if element <#main> contains text: "Night Watch".
+OK. 1 assertions passed. (2.223s)
+test #2 after
+global afterEach
+**** global afterEach is completed ****
+
+OK. 4 total assertions passed. (8.643s)
+global after
 ```
 
-### Run tests
-The tests for nightwatch are written using [nodeunit](https://github.com/caolan/nodeunit) as the test framework. To run the nodeunit tests do:
+But the actual behaviour is this, note that the second tests starts before the globalAfterEach of the first completes:
+
 ```sh
-$ npm test
+[Tests\google\google Demo Test] Test Suite
+==========================================
+global beforeEach
+test #1 before
+Running:  demo test google #1
+ ? Element <body> was present after 24 milliseconds.
+OK. 1 assertions passed. (1.927s)
+Running:  part two #1
+ ? Testing if element <#main> contains text: "Night Watch".
+OK. 1 assertions passed. (2.304s)
+test #1 after
+global afterEach
+
+[Tests\google\google Demo Test2] Test Suite
+===========================================
+global beforeEach
+test #2 before
+Running:  demo test google #1
+ ? Element <body> was present after 22 milliseconds.
+OK. 1 assertions passed. (1.828s)
+Running:  part two #2
+**** global afterEach is completed ****
+ ? Testing if element <#main> contains text: "Night Watch".
+OK. 1 assertions passed. (2.182s)
+test #2 after
+global afterEach
+OK. 4 total assertions passed. (8.606s)
+global after
+**** global afterEach is completed ****
 ```
 
-### Discuss
-The [Mailing List/Google Group](https://groups.google.com/forum/#!forum/nightwatchjs) is the most appropriate tool for Nightwatch related discussions. In addition, there is a [StackOverflow Nightwatch.js tag](http://stackoverflow.com/questions/tagged/nightwatch.js) at your disposal and [Twitter](https://twitter.com/nightwatchjs).
+Is this a bug? a temporary limitation?
 
-### Setup Guides
-Browser specific setup and usage guides along with debugging instructions can be found on the [**Wiki**](https://github.com/nightwatchjs/nightwatch/wiki).
+
+### How to run the 2 tests
+
+node nightwatch.js --tag luca
 

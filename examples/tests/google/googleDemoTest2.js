@@ -8,11 +8,11 @@
 module.exports = {
    tags: ["luca"],
    before: function (browser, callback) {
-      console.log("test #1 before");         
+      console.log("test #2 before");         
       callback(); 
    },
    after: function (browser, callback) {
-      console.log("test #1 after");            
+      console.log("test #2 after");            
       callback();
    },    
   'demo test google #1' : function (client) {
@@ -21,7 +21,7 @@ module.exports = {
       .waitForElementPresent('body', 1000);
   },
 
-  'part two #1' : function(client) {
+  'part two #2' : function(client) {
     client
       .setValue('input[type=text]', ['nightwatch', client.Keys.ENTER])
       .pause(1000)
